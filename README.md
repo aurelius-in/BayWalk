@@ -1,4 +1,4 @@
-# BayWalk
+![BW Wordmark](bw_wordmark.png)
 
 **Walk the bay once. Leave with the BOM, coverage plan, edge sizing, IaC, Jira stories, and a compliance pack.**
 
