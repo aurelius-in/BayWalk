@@ -1,19 +1,21 @@
-## Summary
+<!--
+Provide a concise, unique summary of your change. Guidance (do not leave this block visible):
+- What changed and why? Impact, risk, rollback.
+- Validation: unit tests, smoke, manual endpoints.
+- Artifacts: delivery-kit path, SBOM/Infracost links.
+- Ensure: ruff/mypy clean, no secrets, docs updated if needed.
+-->
 
-- What does this PR change?
-- Why is this needed?
+Describe the change:
 
-## Testing
-- [ ] Unit tests (pytest)
-- [ ] Smoke test (`backend/scripts/smoke.py`)
-- [ ] Manual endpoints verified (/healthz, /metrics)
+Links (issue/ticket/CI artifacts):
 
-## Artifacts
-- Link to `delivery-kit/<pid>/` outputs (if applicable)
-- SBOM/Infracost (CI artifacts)
-
-## Checklist
+<!--
+Optional checklist (remove if not needed):
 - [ ] Lint clean (ruff)
 - [ ] Types clean (mypy)
+- [ ] Tests updated/passing (pytest)
+- [ ] Smoke ran (backend/scripts/smoke.py)
 - [ ] No secrets committed
-- [ ] Updated README/docs if needed
+- [ ] README/docs updated if needed
+-->
