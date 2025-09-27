@@ -1,0 +1,7 @@
+FROM nvcr.io/nvidia/tritonserver:24.08-py3
+
+# Copy model repository at runtime mount, or bake in if desired
+# COPY runtime/triton /models
+
+# Default cmd to show usage
+CMD ["tritonserver", "--help"]
