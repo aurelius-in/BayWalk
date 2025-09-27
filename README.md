@@ -29,14 +29,14 @@ BayWalk is a mobile-plus-backend field-architect tool for manufacturing and indu
 
 ```mermaid
 flowchart TB
-  A[Mobile (React Native/Expo)<br/>Export Scene JSON] --> B[API (FastAPI)<br/>Upload/Plan/Generate]
-  B --> C[Planners<br/>Coverage (Open3D/OpenCV)<br/>Edge sizing (OR-Tools)<br/>Power/PoE<br/>Routing]
-  C --> D[Generators<br/>IaC (Terraform/Helm)<br/>Integrations (OPC-UA/MQTT)<br/>Jira JSON<br/>Compliance bundle<br/>Runtime (ORT/Triton)]
-  B --> E[Policy Gate (OPA)<br/>Evidence Signer (cosign)]
-  D --> F[(delivery-kit/<pid>)]
-  B --> G[(Postgres)]
-  D --> H[(Object Store S3/MinIO)]
-  B --> I[Observability<br/>/metrics (Prometheus)<br/>OTEL traces]
+  A["Mobile (React Native/Expo)<br/>Export Scene JSON"] --> B["API (FastAPI)<br/>Upload/Plan/Generate"]
+  B --> C["Planners<br/>Coverage (Open3D/OpenCV)<br/>Edge sizing (OR-Tools)<br/>Power/PoE<br/>Routing"]
+  C --> D["Generators<br/>IaC (Terraform/Helm)<br/>Integrations (OPC-UA/MQTT)<br/>Jira JSON<br/>Compliance bundle<br/>Runtime (ORT/Triton)"]
+  B --> E["Policy Gate (OPA)<br/>Evidence Signer (cosign)"]
+  D --> F[("delivery-kit/<pid>")]
+  B --> G[("Postgres")]
+  D --> H[("Object Store S3/MinIO")]
+  B --> I["Observability<br/>/metrics (Prometheus)<br/>OTEL traces"]
 ```
 
 **Core libs:** FastAPI, OpenCV, Open3D, OR-Tools, Pydantic, OPA (via REST), Triton or ONNX Runtime, cosign, Infracost.  
