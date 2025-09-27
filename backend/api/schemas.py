@@ -85,3 +85,28 @@ class PlanResponse(BaseModel):
     policies: PolicyResult
     costs: CostResult
     messages: List[str]
+
+
+class GenerateResponse(BaseModel):
+    project_id: str
+    status: str
+    kit_path: str
+    messages: List[str]
+
+
+class PolicyResponse(BaseModel):
+    project_id: str
+    allow: bool
+    rationale: List[str]
+
+
+class EvidenceInfo(BaseModel):
+    project_id: str
+    zip: str
+    signed: bool
+    signature_path: str | None = None
+
+
+class EvidenceResponse(BaseModel):
+    project_id: str
+    evidence: Dict[str, Any]
