@@ -129,12 +129,26 @@ def _ilp_select_placements(rect: Dict[str, float], n: int) -> List[Dict[str, Any
     return placements
 
 
+def _open3d_placements(rect: Dict[str, float], n: int) -> List[Dict[str, Any]]:
+    # Placeholder: later use Open3D to build mesh and sample candidate viewpoints avoiding occlusions
+    try:
+        import open3d as o3d  # noqa: F401
+    except Exception:
+        return _placements_along_wall(rect, n)
+    # For now, just mirror the wall placement
+    return _placements_along_wall(rect, n)
+
+
 def compute_coverage(scene: Dict[str, Any], targets: Dict[str, Any]) -> Dict[str, Any]:
     rect = _rect_from_anchors(scene)
     n = _num_cams_for_targets(targets)
 
     use_ilp = bool(targets.get("use_ilp", False))
-    if use_ilp:
+    use_open3d = bool(targets.get("use_open3d", False))
+
+    if use_open3d:
+        placements = _open3d_placements(rect, n)
+    elif use_ilp:
         placements = _ilp_select_placements(rect, n)
     else:
         placements = _placements_along_wall(rect, n)

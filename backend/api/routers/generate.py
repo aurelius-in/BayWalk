@@ -7,6 +7,7 @@ from generators.jira import build_jira_epics_stories, write_jira_bundle
 from generators.compliance import write_compliance_bundle
 from generators.costs import write_cost_summary
 from generators.exec_summary import write_exec_summary
+from generators.runtime import write_runtime_configs
 from api.schemas import GenerateResponse
 
 router = APIRouter()
@@ -39,6 +40,9 @@ def generate_artifacts(pid: str):
 
     # Exec Summary
     write_exec_summary(kit_root, result)
+
+    # Runtime configs (ORT/Triton)
+    write_runtime_configs(kit_root, result.get("edge_profile", {}))
 
     return {
         "project_id": pid,
