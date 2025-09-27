@@ -1,5 +1,14 @@
 ![BW Wordmark](bw_wordmark.png)
 
+[![CI - develop](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml)
+[![CI - main](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml)
+![lint: ruff](https://img.shields.io/badge/lint-ruff-4B8BBE?labelColor=555)
+![types: mypy](https://img.shields.io/badge/types-mypy-3776AB?labelColor=555)
+![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)
+![SBOM CycloneDX](https://img.shields.io/badge/SBOM-CycloneDX-blue)
+![Security scan: grype](https://img.shields.io/badge/security%20scan-grype-informational)
+![Cost: Infracost](https://img.shields.io/badge/cost-Infracost-00A8E0)
+
 **Walk the bay once. Leave with the BOM, coverage plan, edge sizing, IaC, Jira stories, and a compliance pack.**
 
 BayWalk is a mobile-plus-backend field-architect tool for manufacturing and industrial sites. An on-site “bay walk” becomes deployable artifacts: camera FOV layout with occlusion checks, Jetson vs IPC sizing, PoE and power budgets, hardware BOMs with cost roll-ups, Terraform and Kubernetes manifests, Ignition/OPC-UA tag maps, MQTT topic plans, Jira epics and stories, and a signed compliance bundle. Operates one sprint ahead to unblock delivery teams.
