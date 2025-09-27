@@ -6,11 +6,12 @@ from generators.integration import write_integrations
 from generators.jira import build_jira_epics_stories, write_jira_bundle
 from generators.compliance import write_compliance_bundle
 from generators.costs import write_cost_summary
+from api.schemas import GenerateResponse
 
 router = APIRouter()
 
 
-@router.post("/projects/{pid}/generate")
+@router.post("/projects/{pid}/generate", response_model=GenerateResponse)
 def generate_artifacts(pid: str):
     graph = build_graph()
     state: State = {"project_id": pid, "messages": []}

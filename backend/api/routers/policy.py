@@ -3,11 +3,12 @@ from pathlib import Path
 import os
 from orchestrator.graph import build_graph, State
 from policy.engine import build_policy_input, write_policy_inputs, evaluate_opa
+from api.schemas import PolicyResponse
 
 router = APIRouter()
 
 
-@router.post("/projects/{pid}/policy")
+@router.post("/projects/{pid}/policy", response_model=PolicyResponse)
 def run_policy(pid: str):
     graph = build_graph()
     state: State = {"project_id": pid, "messages": []}

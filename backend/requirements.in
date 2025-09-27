@@ -21,4 +21,3 @@ pyyaml
 rich
 opentelemetry-sdk
 prometheus-client
-infracost

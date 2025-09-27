@@ -1,0 +1,78 @@
+name: ci
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install backend deps
+        working-directory: backend
+        run: |
+          uv pip install -r requirements.in --system
+          uv pip freeze > requirements.lock
+
+      - name: Run tests
+        working-directory: backend
+        run: pytest -q
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom.json
+
+      - name: Security scan (grype)
+        uses: anchore/scan-action@v3
+        with:
+          sbom: sbom.json
+        continue-on-error: true
+
+      - name: Infracost breakdown
+        if: github.event_name == 'pull_request'
+        uses: infracost/actions/setup@v3
+      
+      - name: Run Infracost
+        if: github.event_name == 'pull_request'
+        run: |
+          infracost breakdown --path delivery-kit --format json --out-file infracost.json || true
+
+      - name: Comment PR with Infracost
+        if: github.event_name == 'pull_request'
+        uses: infracost/actions/comment@v3
+        with:
+          path: infracost.json
+          behavior: update
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: baywalk-artifacts
+          path: |
+            sbom.json
+            infracost.json
+            backend/.pytest_cache
+            backend/requirements.lock
+
+      - name: Optional sign SBOM
+        if: env.COSIGN_KEY != ''
+        env:
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+        run: |
+          echo "$COSIGN_KEY" > cosign.key
+          cosign sign-blob --key cosign.key --output-signature evidence.sig sbom.json || true

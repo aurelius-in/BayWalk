@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 from orchestrator.graph import build_graph, State
+from api.schemas import PlanResponse
 
 router = APIRouter()
 
 
-@router.post("/projects/{pid}/plan")
+@router.post("/projects/{pid}/plan", response_model=PlanResponse)
 def run_planners(pid: str):
     graph = build_graph()
     state: State = {"project_id": pid, "messages": []}
