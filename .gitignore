@@ -1,0 +1,12 @@
+.env
+.env.*
+__pycache__/
+*.pyc
+node_modules/
+dist/
+build/
+.delivery-cache/
+delivery-kit/
+backend/evidence/
+backend/.pytest_cache/
+coverage/
