@@ -5,6 +5,7 @@ from generators.iac import write_infra
 from generators.integration import write_integrations
 from generators.jira import build_jira_epics_stories, write_jira_bundle
 from generators.compliance import write_compliance_bundle
+from generators.costs import write_cost_summary
 
 router = APIRouter()
 
@@ -30,6 +31,9 @@ def generate_artifacts(pid: str):
 
     # Compliance
     write_compliance_bundle(kit_root, {"id": pid}, result, result.get("policies", {}))
+
+    # Costs
+    write_cost_summary(kit_root, result.get("bom", {}))
 
     return {
         "project_id": pid,
