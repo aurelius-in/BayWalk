@@ -1,7 +1,5 @@
 ![BW Wordmark](bw_wordmark.png)
 
-[![CI - develop](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml)
-[![CI - main](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml)
 ![lint: ruff](https://img.shields.io/badge/lint-ruff-4B8BBE?labelColor=555)
 ![types: mypy](https://img.shields.io/badge/types-mypy-3776AB?labelColor=555)
 ![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)
@@ -31,28 +29,14 @@ BayWalk is a mobile-plus-backend field-architect tool for manufacturing and indu
 
 ```mermaid
 flowchart TB
-  A[Mobile (React Native/Expo)
-  Export Scene JSON] --> B[API (FastAPI)
-  Upload/Plan/Generate]
-  B --> C[Planners
-  - Coverage (Open3D/OpenCV)
-  - Edge sizing (OR-Tools)
-  - Power/PoE
-  - Routing]
-  C --> D[Generators
-  - IaC (Terraform/Helm)
-  - Integrations (OPC-UA/MQTT)
-  - Jira JSON
-  - Compliance bundle
-  - Runtime (ORT/Triton)]
-  B --> E[Policy Gate (OPA)
-  Evidence Signer (cosign)]
+  A[Mobile (React Native/Expo)<br/>Export Scene JSON] --> B[API (FastAPI)<br/>Upload/Plan/Generate]
+  B --> C[Planners<br/>Coverage (Open3D/OpenCV)<br/>Edge sizing (OR-Tools)<br/>Power/PoE<br/>Routing]
+  C --> D[Generators<br/>IaC (Terraform/Helm)<br/>Integrations (OPC-UA/MQTT)<br/>Jira JSON<br/>Compliance bundle<br/>Runtime (ORT/Triton)]
+  B --> E[Policy Gate (OPA)<br/>Evidence Signer (cosign)]
   D --> F[(delivery-kit/<pid>)]
   B --> G[(Postgres)]
   D --> H[(Object Store S3/MinIO)]
-  B --> I[Observability
-  - /metrics (Prometheus)
-  - OTEL traces]
+  B --> I[Observability<br/>/metrics (Prometheus)<br/>OTEL traces]
 ```
 
 **Core libs:** FastAPI, OpenCV, Open3D, OR-Tools, Pydantic, OPA (via REST), Triton or ONNX Runtime, cosign, Infracost.  
