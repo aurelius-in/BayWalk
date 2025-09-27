@@ -1,5 +1,14 @@
 ![BW Wordmark](bw_wordmark.png)
 
+[![CI - develop](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml)
+[![CI - main](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/aurelius-in/BayWalk/actions/workflows/ci.yml)
+![lint: ruff](https://img.shields.io/badge/lint-ruff-4B8BBE?labelColor=555)
+![types: mypy](https://img.shields.io/badge/types-mypy-3776AB?labelColor=555)
+![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)
+![SBOM CycloneDX](https://img.shields.io/badge/SBOM-CycloneDX-blue)
+![Security scan: grype](https://img.shields.io/badge/security%20scan-grype-informational)
+![Cost: Infracost](https://img.shields.io/badge/cost-Infracost-00A8E0)
+
 **Walk the bay once. Leave with the BOM, coverage plan, edge sizing, IaC, Jira stories, and a compliance pack.**
 
 BayWalk is a mobile-plus-backend field-architect tool for manufacturing and industrial sites. An on-site “bay walk” becomes deployable artifacts: camera FOV layout with occlusion checks, Jetson vs IPC sizing, PoE and power budgets, hardware BOMs with cost roll-ups, Terraform and Kubernetes manifests, Ignition/OPC-UA tag maps, MQTT topic plans, Jira epics and stories, and a signed compliance bundle. Operates one sprint ahead to unblock delivery teams.
@@ -20,30 +29,30 @@ BayWalk is a mobile-plus-backend field-architect tool for manufacturing and indu
 
 ## Architecture
 
-```
-
-Mobile (React Native / Expo)
-└─ On-device capture (video + anchors) → Scene JSON
-
-Backend (FastAPI, Python)
-├─ Scene ingestion and normalization
-├─ Planners
-│   ├─ Coverage & FOV (Open3D/OpenCV)
-│   ├─ PoE & power budgets
-│   ├─ Edge sizing (Jetson vs IPC+GPU)
-│   └─ Cable route suggestions
-├─ Policy gate (OPA) and evidence signer (cosign)
-├─ Cost model (Infracost + BOM roll-ups)
-└─ Artifact generators
-├─ Terraform / Helm / K8s
-├─ Ignition/OPC-UA tags, MQTT topics
-├─ Jira epics/stories JSON
-└─ Compliance bundle (IQ/OQ/PQ, traceability)
-
-Data
-├─ Postgres (projects, scenes, BOMs, runs)
-└─ MinIO/Azure Blob/S3 (scene and evidence artifacts)
-
+```mermaid
+flowchart TB
+  A[Mobile (React Native/Expo)
+  Export Scene JSON] --> B[API (FastAPI)
+  Upload/Plan/Generate]
+  B --> C[Planners
+  - Coverage (Open3D/OpenCV)
+  - Edge sizing (OR-Tools)
+  - Power/PoE
+  - Routing]
+  C --> D[Generators
+  - IaC (Terraform/Helm)
+  - Integrations (OPC-UA/MQTT)
+  - Jira JSON
+  - Compliance bundle
+  - Runtime (ORT/Triton)]
+  B --> E[Policy Gate (OPA)
+  Evidence Signer (cosign)]
+  D --> F[(delivery-kit/<pid>)]
+  B --> G[(Postgres)]
+  D --> H[(Object Store S3/MinIO)]
+  B --> I[Observability
+  - /metrics (Prometheus)
+  - OTEL traces]
 ```
 
 **Core libs:** FastAPI, OpenCV, Open3D, OR-Tools, Pydantic, OPA (via REST), Triton or ONNX Runtime, cosign, Infracost.  
@@ -55,246 +64,119 @@ Data
 ## Repository Layout
 
 ```
-
 BayWalk/
 app/                     # React Native (Expo) mobile scanner
 backend/
-api/                   # FastAPI routers and DTOs
-planners/              # coverage, power/PoE, edge sizing, routing
-generators/            # terraform, k8s, mqtt, opcua, jira, diagrams
-policy/                # OPA policies and tests
-compliance/            # IQ/OQ/PQ templates, traceability, SOPs
-costs/                 # Infracost integration + BOM rollups
-evidence/              # signer, SBOM, provenance
-db/                    # migrations, models, seed data
-tests/                 # unit/integration tests
-delivery-kit/            # emitted IaC and manifests (per project)
+  api/                   # FastAPI routers and DTOs
+  planners/              # coverage, power/PoE, edge sizing, routing
+  generators/            # terraform, k8s, mqtt, opcua, jira, runtime
+  policy/                # OPA policies and client
+  evidence/              # signer, SBOM, provenance
+  db/                    # models, session
+  tests/                 # unit/integration tests
+delivery-kit/            # emitted IaC and artifacts (per project)
 docs/
-bom/                   # reference BOMs (Jetson vs IPC)
-c4/                    # C4 diagrams (context/container/component)
-playbooks/             # sprint-ahead spikes, risk matrix, checklists
-guides/                # setup, operations, field playbook
-jira/                    # epic/story templates + CLI poster
-ci/                      # cosign, SBOM, linters, Infracost
-README.md
-
-````
+  bom/                   # reference BOMs (Jetson vs IPC)
+runtime/                 # Triton/ORT runtime configs & Dockerfiles
+```
 
 ---
 
 ## Quickstart
 
 ### Prerequisites
-- Node 18+, Yarn or PNPM, Xcode or Android Studio for the mobile app
-- Python 3.11+, Poetry or uv, Docker, Docker Compose
-- cosign, opa, terraform, helm, kubectl, Infracost
-- Optional: MinIO or cloud blob store for artifacts
+- Node 18+, PNPM, Xcode/Android Studio (mobile)
+- Python 3.11+, uv, Docker, Docker Compose
+- cosign, opa, infracost (optional)
 
 ### 1) Backend
 
 ```bash
-cd backend
-# create env
-cp .env.example .env
-# install
-poetry install
-# run database
-docker compose up -d postgres minio
-# migrate
-poetry run alembic upgrade head
+# services
+make up
+# env
+cp backend/.env.example backend/.env
+# deps
+cd backend && ../.venv/Scripts/python -m uv pip install -r requirements.in && cd ..
 # start API
-poetry run uvicorn api.main:app --reload --port 8080
-````
+.\.venv\Scripts\python -m uvicorn api.main:app --port 8080
+```
 
 ### 2) Mobile app
 
 ```bash
 cd app
-cp .env.example .env
-# install deps
 pnpm install
-# run Expo
 pnpm expo start
 ```
 
-### 3) First project from a sample scene
+### 3) First project
 
 ```bash
-# seed a sample scene
-curl -X POST http://localhost:8080/projects -H "Content-Type: application/json" -d '{
-  "name": "Bay A Pilot",
-  "targets": {"coverage_pct": 0.9, "latency_ms_p95": 250},
-  "scene_ref": "samples/bay-a.scene.json"
-}'
-
-# run planners
-curl -X POST http://localhost:8080/projects/{project_id}/plan
-
-# generate artifacts
-curl -X POST http://localhost:8080/projects/{project_id}/generate
+# seed (optional)
+.\.venv\Scripts\python backend/scripts/seed_sample_scene.py
+# upload scene
+curl -s -X POST http://localhost:8080/projects/upload \
+  -H "Content-Type: application/json" \
+  -d '{"scene": {"anchors":[{"type":"bay_rect","width_m":20,"height_m":10}],"zones":[{"name":"lane_A"}]},"name":"Bay A","targets":{"num_cameras":8,"target_fps":8}}'
+# plan & generate
+curl -X POST http://localhost:8080/projects/<pid>/plan
+curl -X POST http://localhost:8080/projects/<pid>/generate
 ```
 
-Artifacts will be written to `delivery-kit/<project_id>/` and evidence to `backend/evidence/<project_id>/`.
+Artifacts are written to `delivery-kit/<pid>/` and evidence to `backend/evidence/<pid>/`.
 
 ---
 
-## Config
+## Production Run
 
-Key environment variables in `backend/.env`:
+```bash
+# build image
+docker build -t baywalk-backend ./backend
+# run (ensure backend/.env configured)
+docker run --rm -p 8080:8080 --env-file backend/.env baywalk-backend
+# health and metrics
+curl http://localhost:8080/healthz
+curl http://localhost:8080/metrics
+```
 
-```
-DATABASE_URL=postgresql+psycopg://baywalk:baywalk@localhost:5432/baywalk
-ARTIFACT_BUCKET_URL=s3://baywalk-artifacts
-ARTIFACT_BUCKET_ENDPOINT=http://localhost:9000
-OPA_URL=http://localhost:8181
-INFRACOST_API_KEY=...
-COSIGN_KEY_PATH=./ci/keys/cosign.key
-```
+---
 
-Mobile `app/.env`:
+## Reviewer Checklist
 
-```
-API_BASE_URL=http://<your-host>:8080
-OFFLINE_CACHE=true
-```
+- Architecture: Mermaid diagram (vertical), data stores, kit outputs
+- Repro: Quickstart works; /healthz and /metrics respond
+- Contracts: OpenAPI models in `api/schemas.py`; example curl requests
+- Tests: `pytest -q` green; smoke script runs end-to-end
+- Lint/Types: `ruff check` and `mypy` clean (CI gates)
+- Security: no secrets in repo; SECURITY.md present; SBOM/scan in CI
+- Persistence: DB-backed projects; env-configurable `DATABASE_URL`
+- Observability: Prometheus metrics; OTEL hooks in agents
+- Delivery kit: expected folders and exec OnePager present
+- CI: artifacts uploaded (sbom.json, infracost.json)
 
 ---
 
 ## Field Workflow
 
-1. **Walk Bay**
-   Open the app, select the bay, and record a short walkthrough. Add anchors: ceiling height, bay length, mounting beams. The app exports a `Scene JSON`.
-
-2. **Map Coverage**
-   Backend reconstructs rough geometry, suggests candidate mount positions, and projects FOV cones with occlusion flags. Coverage heatmap is computed against target zones.
-
-3. **Place Cams**
-   OR-Tools optimizer proposes minimal camera count and lens choices to hit target coverage. User can lock or override placements.
-
-4. **Size Edge**
-   Throughput model computes frames per second per camera, model complexity, and streams to propose Jetson vs IPC+GPU with memory and thermal checks.
-
-5. **Route Cables**
-   Cable runs, PoE switch tiers, and power budgets are calculated. UPS options and runtime are suggested based on load.
-
-6. **Forge BOM**
-   Hardware BOM is assembled with part numbers, vendor hints, unit cost, and total per bay. Cost roll-ups are exported.
-
-7. **Gate Policies**
-   OPA evaluates network zones, encryption, RBAC, image signing, and data retention. Results are captured as signed evidence.
-
-8. **Spin Stories**
-   Jira epics/stories are generated with DoR/DoD, AC, test notes, and spike templates for the next two sprints.
-
-9. **Print Kits**
-   Delivery pack emits Terraform, Helm/K8s, Triton or ONNX Runtime pipelines, Ignition/OPC-UA tag CSVs, MQTT topic maps, and an exec one-pager.
+1. **Walk Bay** – app exports `Scene JSON` with anchors
+2. **Map Coverage** – Open3D/OpenCV coverage and heatmap
+3. **Place Cams** – OR-Tools ILP (optional) and wall placement
+4. **Size Edge** – throughput → Jetson vs IPC profile
+5. **Route Cables** – straight-line heuristic for MVP
+6. **Forge BOM** – catalog mapping and totals
+7. **Gate Policies** – OPA defaults (MVP allow) + evidence
+8. **Spin Stories** – Jira JSON
+9. **Print Kits** – IaC, integrations, runtime configs, OnePager
 
 ---
 
-## Data Model (abridged)
-
-```json
-{
-  "project": {
-    "id": "uuid",
-    "name": "Bay A Pilot",
-    "targets": {"coverage_pct": 0.9, "latency_ms_p95": 250},
-    "scene_ref": "s3://.../bay-a.scene.json"
-  },
-  "plan": {
-    "coverage": {"pct": 0.93, "blind_spots": 2},
-    "placements": [{"id": "cam1", "x": 1.2, "y": 5.6, "z": 3.1, "lens": "2.8mm"}],
-    "edge_profile": {"type": "jetson_orin_nx", "gpu_mem_gb": 16},
-    "power_poe": {"budget_w": 180, "switch": "PoE+ 24-port"},
-    "costs": {"bom_total_usd": 11840.55}
-  }
-}
-```
-
----
-
-## Planners
-
-* **Coverage & FOV:** Open3D mesh + OpenCV projections. Targets: coverage percent, minimum pixels on target, occlusion threshold.
-* **Edge sizing:** FPS × cams × model complexity to GPU/CPU budget. Profiles: Triton (TensorRT) or ONNX Runtime.
-* **Power/PoE:** Device draw, PoE class mix, switch tiering, UPS runtime.
-* **Routing:** Heuristics for shortest cable runs with mount constraints.
-
----
-
-## Generated Artifacts
-
-* **IaC:** `delivery-kit/<id>/infra/terraform/` and `helm/` charts for cluster setup, namespaces, RBAC, storage, ingress, and secrets.
-* **K8s manifests:** namespace, operators, deployments, configmaps, PVCs.
-* **Edge pipelines:** Triton or ONNX Runtime container recipes and configs.
-* **Integration:** `opcua-tags.csv`, `mqtt-topics.yaml`, Ignition tag structure.
-* **Jira:** `jira/<id>/epics.json`, `stories.json` plus a CLI to post.
-* **Compliance:** `compliance/<id>/` with IQ/OQ/PQ templates, traceability matrix, and signed evidence.
-
----
-
-## Policy Gate
-
-* Identity, RBAC, and network zone checks
-* Container image signing and SBOM presence
-* Encryption at rest and in transit
-* Data retention and redaction rules
-* Evidence bundle signed with cosign
-
-Policy results are embedded into the exec read-out and retained in the traceability matrix.
-
----
-
-## Reference BOMs
-
-Located in `docs/bom/` with two ready profiles:
-
-* **Jetson Orin NX build:** fixed lens cameras, PoE+ switch, M.2 SSD, DIN mount, ventilated enclosure, DC power budget, UPS.
-* **IPC + GPU build:** industrial PC, low-profile GPU, PoE switch, NVMe storage, rack or wall mount, UPS.
-
-Each BOM includes part numbers, unit cost, sourcing hints, lens/lighting notes, and installation accessories.
-
----
-
-## KPIs
-
-* Walk to first deployable plan: under 2 hours
-* First-pass coverage: at least 90 percent of target zones
-* Estimation error vs actual costs: under 15 percent
-* Policy violations caught pre-sprint: over 80 percent
-* Stakeholder prep time saved: over 10 hours per bay
-
----
-
-## Roadmap
-
-* Multi-bay projects and inter-bay cable planning
-* Privacy zones and masking with audit
-* Thermal imaging support and lighting calculators
-* CAD import for higher-fidelity geometry
-* Vendor plugin model for cameras, lenses, mounts, and enclosures
-
----
-
-## Security and Privacy
-
-* Device scans remain local until uploaded by the user.
-* All artifacts can be stored in a customer-controlled bucket.
-* Evidence bundles use signed digests with SBOMs.
-* PII redaction rules available in the policy gate.
+## Policy, Security, and Costs
+- Policy: OPA Rego under `backend/policy/rego`; MVP endpoint returns allow=true with inputs captured
+- Security: cosign evidence stub; secrets via env; see SECURITY.md
+- Costs: BOM roll-up + Infracost (optional)
 
 ---
 
 ## Contributing
-
-Issues and PRs are welcome. Please include:
-
-* Problem statement, acceptance criteria, and expected artifacts.
-* Planner test cases and sample scenes.
-* Policy updates with unit tests.
-
----
-
-## License
-
-Apache 2.0 (suggested). See `LICENSE`.
+See `CONTRIBUTING.md`. PRs must pass tests, ruff, mypy, and security scan.
