@@ -1,0 +1,9 @@
+FROM python:3.12-slim
+
+RUN pip install --no-cache-dir onnxruntime onnxruntime-gpu==1.18.0 starlette uvicorn
+
+WORKDIR /app
+COPY runtime/onnxruntime /app/runtime/onnxruntime
+
+# Placeholder server
+CMD ["python", "-c", "print('Start ORT runtime with session.json...')"]
