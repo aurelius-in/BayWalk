@@ -26,9 +26,24 @@ jobs:
           uv pip install -r requirements.in --system
           uv pip freeze > requirements.lock
 
+      - name: Install linters and pre-commit
+        run: |
+          uv pip install ruff mypy pre-commit --system
+
+      - name: Lint (ruff)
+        working-directory: backend
+        run: ruff check .
+
+      - name: Type check (mypy)
+        working-directory: backend
+        run: mypy api planners generators policy db orchestrator
+
       - name: Run tests
         working-directory: backend
         run: pytest -q
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files --show-diff-on-failure
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
@@ -66,7 +81,6 @@ jobs:
           path: |
             sbom.json
             infracost.json
-            backend/.pytest_cache
             backend/requirements.lock
 
       - name: Optional sign SBOM
